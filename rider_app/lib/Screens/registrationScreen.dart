@@ -1,24 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:rider_app/Screens/home.dart';
-import 'package:rider_app/Screens/registrationScreen.dart';
+import 'package:rider_app/Screens/loginscreen.dart';
 import 'package:rider_app/main.dart';
 
 // ignore: must_be_immutable
-class LoginScreen extends StatelessWidget {
-    static const String idScreen="login";
-      TextEditingController emailTextEditingController= TextEditingController();
-      TextEditingController passwordTextEditingController= TextEditingController();
-
-  FToast fToast;
+class RegistrationScreen extends StatelessWidget {
+  static const String idScreen="register";
+  TextEditingController nameTextEditingController= TextEditingController();
+  TextEditingController emailTextEditingController= TextEditingController();
+  TextEditingController phoneTextEditingController= TextEditingController();
+  TextEditingController passwordTextEditingController= TextEditingController();
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
+  
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +41,7 @@ class LoginScreen extends StatelessWidget {
                 ),
 
                 Text(
-                  "Login as a Rider",
+                  "Register as a Rider",
                   style: TextStyle(fontSize: 24.0,fontFamily: "Brand Bold"),
                   
                 ),
@@ -56,10 +56,28 @@ class LoginScreen extends StatelessWidget {
                         height: 1.0,
                        ),
                       _formField(
+                        labeltext: "Name",
+                        obsecure: false,
+                        tit: TextInputType.text,
+                        controller: nameTextEditingController
+                      ),
+                      SizedBox(
+                        height: 1.0,
+                       ),
+                      _formField(
                         labeltext: "Email",
                         obsecure: false,
                         tit: TextInputType.emailAddress,
                         controller: emailTextEditingController
+                      ),
+                      SizedBox(
+                        height: 1.0,
+                       ),
+                      _formField(
+                        labeltext: "Phone",
+                        obsecure: false,
+                        tit: TextInputType.phone,
+                        controller: phoneTextEditingController
                       ),
                       SizedBox(
                       height: 10.0,
@@ -68,7 +86,6 @@ class LoginScreen extends StatelessWidget {
                          labeltext: "Password",
                          obsecure: true,
                          controller: passwordTextEditingController
-
                       ),
 
                       SizedBox(
@@ -80,7 +97,7 @@ class LoginScreen extends StatelessWidget {
                         textColor: Colors.white,
                         child: Container(
                           height: 50.0,
-                          child: Center(child: Text("Login",style: TextStyle(fontSize: 18,fontFamily: "Brand Bold "),)),
+                          child: Center(child: Text("Create Account",style: TextStyle(fontSize: 18,fontFamily: "Brand Bold "),)),
                         ),
 
                         shape: new RoundedRectangleBorder(
@@ -88,15 +105,24 @@ class LoginScreen extends StatelessWidget {
                         ),
 
                         onPressed: (){
-                          if(!emailTextEditingController.text.contains("@")){
-                            showCustomToast("Invalid email address", context, Icons.error, Colors.red);
+                          if(nameTextEditingController.text.length<6){
+                            showCustomToast("Name must be at least 5 Characters",context, Icons.error, Colors.red);
                           }
-                          else if(passwordTextEditingController.text.isEmpty){
-                            showCustomToast("Password is Required", context, Icons.error, Colors.red);
+
+                          else if(!emailTextEditingController.text.contains("@")){
+                            showCustomToast("Email address is Invalid", context,Icons.error, Colors.red);
+                          }
+
+                          else if(phoneTextEditingController.text.length!=10){
+                            showCustomToast("Invalid Phone Number", context,Icons.error, Colors.red);
+                          }
+
+                           else if(passwordTextEditingController.text.length<7){
+                            showCustomToast("Password must be at least 6 Characters", context,Icons.error, Colors.red);
                           }
 
                           else{
-                            loginandAuthenticateUser(context);
+                            _createnewUser(context);
                           }
                           
                         },
@@ -107,9 +133,9 @@ class LoginScreen extends StatelessWidget {
 
                 FlatButton(
                   onPressed: (){
-                    Navigator.pushNamedAndRemoveUntil(context, RegistrationScreen.idScreen, (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(context, LoginScreen.idScreen, (route) => false);
                   },
-                  child: Text("Do not have an Account? Register here"),
+                  child: Text("Already have an Account? Login here"),
                 ),
                
               ],
@@ -120,10 +146,12 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
+ 
+
   Widget _formField({String labeltext, bool obsecure, TextInputType tit, TextEditingController controller}){
 
         return TextField(
-          controller: controller,
+              controller: controller,
               obscureText: obsecure,
               keyboardType: tit,
               decoration: InputDecoration(
@@ -144,52 +172,45 @@ class LoginScreen extends StatelessWidget {
             );
   }
 
-  void loginandAuthenticateUser(BuildContext context)async{
-    ProgressDialog pr = ProgressDialog(context);
+   void _createnewUser(BuildContext context) async{
+     ProgressDialog pr = ProgressDialog(context);
      pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: true, showLogs: false);
      pr.style(
-       message: "Logging In..."
+       message: "Registering Please Wait..."
      );
      await pr.show();
-    final User firebaseUser = (await _firebaseAuth
-     .signInWithEmailAndPassword( 
+     final User firebaseUser = (await _firebaseAuth
+     .createUserWithEmailAndPassword(
        email: emailTextEditingController.text, 
        password: passwordTextEditingController.text
-    ).catchError((errorMsg) async{
-      await pr.hide();
-      showCustomToast("Error"+errorMsg.toString(), context, Icons.error, Colors.red);
+    ).catchError((errorMsg){
+      showCustomToast("Error: "+errorMsg.toString(), context, Icons.error,Colors.red);
     })).user;
 
     if(firebaseUser!=null){
 
-      
-      usersRef.child(firebaseUser.uid).once().then((DataSnapshot snap) async{
-        if(snap.value!=null){
-          await pr.hide();
-          Navigator.pushNamedAndRemoveUntil(context, MainScreen.idScreen, (route) => false);
-          Fluttertoast.showToast(msg: "Logged in Successful");
-        }
-
-        else{
-          await pr.hide();
-          _firebaseAuth.signOut();
-          Fluttertoast.showToast(msg: "No Record ! Please create new account");
-        }
-      });
-    
-      
+      Map userDataMap = {
+        "name": nameTextEditingController.text.trim(),
+        "email": emailTextEditingController.text.trim(),
+        "phone": phoneTextEditingController.text.trim(),
+      };
+      usersRef.child(firebaseUser.uid).set(userDataMap);
+      showCustomToast("Account Created Successfully", context, Icons.check,Colors.blue);
+      await pr.hide();
+      Navigator.pushNamedAndRemoveUntil(context, MainScreen.idScreen, (route) => false);
     }
 
     else{
       //display error message
       await pr.hide();
-      Fluttertoast.showToast(msg: "Error occoured! Cannot Sign in");
+      showCustomToast("New User has not been created", context, Icons.error, Colors.red);
     }
   }
 
 
+
   showCustomToast(String customToast, BuildContext context, IconData icon, Color color) {
-    fToast = FToast();
+    FToast fToast = FToast();
     fToast.init(context);
     Widget toast = Container(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
@@ -204,7 +225,7 @@ class LoginScreen extends StatelessWidget {
             SizedBox(
             width: 12.0,
             ),
-            Flexible(child: Text(customToast,style: TextStyle(color: Colors.white,))),
+            Text(customToast,style: TextStyle(color: Colors.white,)),
         ],
         ),
 
@@ -219,6 +240,5 @@ class LoginScreen extends StatelessWidget {
     );
   
 }
-
 
 }
