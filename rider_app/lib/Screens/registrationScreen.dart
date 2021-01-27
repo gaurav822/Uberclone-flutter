@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:rider_app/Custom_Widgets/progressdialog.dart';
 import 'package:rider_app/Screens/home.dart';
 import 'package:rider_app/Screens/loginscreen.dart';
 import 'package:rider_app/main.dart';
@@ -173,17 +173,21 @@ class RegistrationScreen extends StatelessWidget {
   }
 
    void _createnewUser(BuildContext context) async{
-     ProgressDialog pr = ProgressDialog(context);
-     pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: true, showLogs: false);
-     pr.style(
-       message: "Registering Please Wait..."
-     );
-     await pr.show();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context)
+      {
+        return ProgressDialog(message:"Registering, Please wait...");
+      }
+
+    );
      final User firebaseUser = (await _firebaseAuth
      .createUserWithEmailAndPassword(
        email: emailTextEditingController.text, 
        password: passwordTextEditingController.text
     ).catchError((errorMsg){
+      Navigator.pop(context);
       showCustomToast("Error: "+errorMsg.toString(), context, Icons.error,Colors.red);
     })).user;
 
@@ -196,13 +200,13 @@ class RegistrationScreen extends StatelessWidget {
       };
       usersRef.child(firebaseUser.uid).set(userDataMap);
       showCustomToast("Account Created Successfully", context, Icons.check,Colors.blue);
-      await pr.hide();
+  
       Navigator.pushNamedAndRemoveUntil(context, MainScreen.idScreen, (route) => false);
     }
 
     else{
       //display error message
-      await pr.hide();
+      Navigator.pop(context);
       showCustomToast("New User has not been created", context, Icons.error, Colors.red);
     }
   }

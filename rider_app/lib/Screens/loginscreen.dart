@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:rider_app/Custom_Widgets/progressdialog.dart';
 import 'package:rider_app/Screens/home.dart';
 import 'package:rider_app/Screens/registrationScreen.dart';
 import 'package:rider_app/main.dart';
@@ -110,8 +110,7 @@ class LoginScreen extends StatelessWidget {
                     Navigator.pushNamedAndRemoveUntil(context, RegistrationScreen.idScreen, (route) => false);
                   },
                   child: Text("Do not have an Account? Register here"),
-                ),
-               
+                ), 
               ],
             ),
           ),
@@ -145,18 +144,22 @@ class LoginScreen extends StatelessWidget {
   }
 
   void loginandAuthenticateUser(BuildContext context)async{
-    ProgressDialog pr = ProgressDialog(context);
-     pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: true, showLogs: false);
-     pr.style(
-       message: "Logging In..."
-     );
-     await pr.show();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context)
+      {
+        return ProgressDialog(message:"Authenticating, Please wait...");
+      }
+
+    );
     final User firebaseUser = (await _firebaseAuth
      .signInWithEmailAndPassword( 
        email: emailTextEditingController.text, 
        password: passwordTextEditingController.text
     ).catchError((errorMsg) async{
-      await pr.hide();
+      Navigator.pop(context);
       showCustomToast("Error"+errorMsg.toString(), context, Icons.error, Colors.red);
     })).user;
 
@@ -165,13 +168,13 @@ class LoginScreen extends StatelessWidget {
       
       usersRef.child(firebaseUser.uid).once().then((DataSnapshot snap) async{
         if(snap.value!=null){
-          await pr.hide();
+          
           Navigator.pushNamedAndRemoveUntil(context, MainScreen.idScreen, (route) => false);
           Fluttertoast.showToast(msg: "Logged in Successful");
         }
 
         else{
-          await pr.hide();
+           Navigator.pop(context);
           _firebaseAuth.signOut();
           Fluttertoast.showToast(msg: "No Record ! Please create new account");
         }
@@ -182,7 +185,7 @@ class LoginScreen extends StatelessWidget {
 
     else{
       //display error message
-      await pr.hide();
+      Navigator.pop(context);
       Fluttertoast.showToast(msg: "Error occoured! Cannot Sign in");
     }
   }
