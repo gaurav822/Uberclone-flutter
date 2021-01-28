@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_app/DataHandler/appData.dart';
 import 'package:rider_app/Screens/home.dart';
 import 'package:rider_app/Screens/loginscreen.dart';
 import 'package:rider_app/Screens/registrationScreen.dart';
@@ -20,25 +22,26 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
 
   
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-    
-      theme: ThemeData(
-        // fontFamily: "Signatra",
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(  //wrapping mateerialapp with Change notfier so that data can be retrieve in all screens
+      create: (context)=>AppData(),
+          child: MaterialApp(
+        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+      
+        theme: ThemeData(
+          // fontFamily: "Signatra",
+          primarySwatch: Colors.blue,
 
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        initialRoute: MainScreen.idScreen,
+        routes: {
+          RegistrationScreen.idScreen :(context)=> RegistrationScreen(),
+          LoginScreen.idScreen :(context)=> LoginScreen(),
+          MainScreen.idScreen :(context)=> MainScreen(),
+        },
       ),
-      initialRoute: MainScreen.idScreen,
-      routes: {
-        RegistrationScreen.idScreen :(context)=> RegistrationScreen(),
-        LoginScreen.idScreen :(context)=> LoginScreen(),
-        MainScreen.idScreen :(context)=> MainScreen(),
-      },
     );
   }
-
-  
 }
 

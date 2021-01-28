@@ -1,9 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_app/Assistants/assistantMethods.dart';
 import 'package:rider_app/Custom_Widgets/Divider.dart';
+import 'package:rider_app/DataHandler/appData.dart';
+import 'package:rider_app/Screens/searchScreen.dart';
 
 class MainScreen extends StatefulWidget {
    static const String idScreen="mainScreen"; 
@@ -15,8 +18,6 @@ class _MainScreenState extends State<MainScreen> {
 
   Completer<GoogleMapController> _controllerGoogleMap = Completer();
   GoogleMapController newGoogleMapController;
-
-
   GlobalKey<ScaffoldState> scaffoldKey= new GlobalKey<ScaffoldState>();
 
   Position currentPosition;
@@ -33,6 +34,9 @@ class _MainScreenState extends State<MainScreen> {
 
     CameraPosition cameraPosition= new CameraPosition(target: latLngPosition,zoom: 14);
     newGoogleMapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+
+    String address= await AssistantMethods.searchCoordinateAddress(position,context);
+    print("This is your address"+address);
   }
 
   static final CameraPosition _kGooglePlex = CameraPosition(
@@ -205,28 +209,34 @@ class _MainScreenState extends State<MainScreen> {
                     Text("Hi there, ",style: TextStyle(fontSize: 12.0),),
                     Text("Where to? ",style: TextStyle(fontSize: 20.0,fontFamily: "Brand Bold"),),
                     SizedBox(height: 20,),
-                    Container(
-                      decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(5.0),
+                    GestureDetector(
+                          onTap: (){
+                            // print("Hello");
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>SearchScreen()));
+                          },
+                          child: Container(
+                        decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5.0),
 
-                      boxShadow: [
-                       BoxShadow(
-                       color: Colors.black54,
-                        blurRadius: 6.0,
-                        spreadRadius: 0.5,
-                        offset: Offset(0.7,0.7)
+                        boxShadow: [
+                         BoxShadow(
+                         color: Colors.black54,
+                          blurRadius: 6.0,
+                          spreadRadius: 0.5,
+                          offset: Offset(0.7,0.7)
                   )
                 ] 
               ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.search,color: Colors.blueAccent,),
-                            SizedBox(width: 10,),
-                            Text("Search Drop Off")
-                          ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.search,color: Colors.blueAccent,),
+                              SizedBox(width: 10,),
+                              Text("Search Drop Off")
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -241,7 +251,13 @@ class _MainScreenState extends State<MainScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                              Text("Add home"),
+                              Text(
+                                Provider.of<AppData>(context).pickupLocation != null ?
+                                Provider.of<AppData>(context).pickupLocation.placeName:
+
+                                "Add Home"
+
+                              ),
                               SizedBox(height: 4,),
                               Text("Your living home address",style: TextStyle(color: Colors.black54,fontSize: 12),),
                           ],
