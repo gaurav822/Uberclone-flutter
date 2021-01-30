@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_app/Assistants/requestAssistant.dart';
 import 'package:rider_app/DataHandler/appData.dart';
@@ -10,8 +11,6 @@ class AssistantMethods{
   static Future<String> searchCoordinateAddress(Position position,context) async{
 
     String placeAddress="";
-
-    String st1,st2,st3,st4;
 
     String url= "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
 
@@ -38,6 +37,21 @@ class AssistantMethods{
     }
 
     return placeAddress;
+
+
+  }
+
+  void obtainPlaceDirectionDetails(LatLng initialPosition,LatLng finalPostion)async{
+    String directionUrl= "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPostion.latitude},${finalPostion.longitude}&key=$mapKey";
+
+    var res= await RequestAssistant.getRequest(directionUrl);
+
+    if(res=="failed"){
+
+      return;
+    }
+
+    
 
 
   }
