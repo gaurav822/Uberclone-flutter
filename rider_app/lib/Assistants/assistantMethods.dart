@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_app/Assistants/requestAssistant.dart';
 import 'package:rider_app/DataHandler/appData.dart';
 import 'package:rider_app/Models/address.dart';
+import 'package:rider_app/Models/allUsers.dart';
+import 'package:rider_app/Models/directionDetails.dart';
 import 'package:rider_app/configMaps.dart';
 
 class AssistantMethods{
@@ -41,18 +45,60 @@ class AssistantMethods{
 
   }
 
-  void obtainPlaceDirectionDetails(LatLng initialPosition,LatLng finalPostion)async{
+  static Future<DirectionDetails> obtainPlaceDirectionDetails(LatLng initialPosition,LatLng finalPostion)async{
     String directionUrl= "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPostion.latitude},${finalPostion.longitude}&key=$mapKey";
 
     var res= await RequestAssistant.getRequest(directionUrl);
 
     if(res=="failed"){
 
-      return;
+      return null;
     }
 
-    
+    DirectionDetails directionDetails= DirectionDetails();
+
+    directionDetails.encodedPoints=res["routes"][0]["overview_polyline"]["points"];
+
+    directionDetails.distanceText=res["routes"][0]["legs"][0]["distance"]["text"];
+
+    directionDetails.distanceValue=res["routes"][0]["legs"][0]["distance"]["value"];
+
+    directionDetails.durationText=res["routes"][0]["legs"][0]["duration"]["text"];
+
+    directionDetails.durationValue=res["routes"][0]["legs"][0]["duration"]["value"];
+
+    return directionDetails;
 
 
+  }
+
+  static int calculateFares(DirectionDetails directionDetails){
+    // interms of USD
+    double timeTravelFare=(directionDetails.durationValue/60) * 0.20;
+
+    double distanceTravelFare=(directionDetails.distanceValue/1000) * 0.20;
+
+    double totalFareAmount= timeTravelFare+distanceTravelFare;
+
+    // 1$ = 116
+
+    double totalLocalAmount=totalFareAmount*116;  //converting to Nepali currency
+
+    return totalLocalAmount.truncate();
+
+
+  }
+
+  static void getCurrentOnlineUserInfo() async{
+
+    firebaseUser = await FirebaseAuth.instance.currentUser;
+    String userId=firebaseUser.uid;
+    DatabaseReference reference= FirebaseDatabase.instance.reference().child("Users").child(userId);
+
+    reference.once().then((DataSnapshot dataSnapShot){
+      if(dataSnapShot.value!=null){
+        userCurrentInfo= Users.fromSnapshots(dataSnapShot);
+      }
+    });
   }
 }
