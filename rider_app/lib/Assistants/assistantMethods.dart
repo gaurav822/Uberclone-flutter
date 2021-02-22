@@ -82,7 +82,7 @@ class AssistantMethods{
 
     // 1$ = 116
 
-    double totalLocalAmount=totalFareAmount*116;  //converting to Nepali currency
+    double totalLocalAmount=totalFareAmount*40;  //converting to Indian currency
 
     return totalLocalAmount.truncate();
 
@@ -91,7 +91,7 @@ class AssistantMethods{
 
   static void getCurrentOnlineUserInfo() async{
 
-    firebaseUser = await FirebaseAuth.instance.currentUser;
+    firebaseUser =  FirebaseAuth.instance.currentUser;
     String userId=firebaseUser.uid;
     DatabaseReference reference= FirebaseDatabase.instance.reference().child("Users").child(userId);
 
