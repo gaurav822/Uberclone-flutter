@@ -90,17 +90,17 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Signatra
-      fonts:
-        - asset: fonts/Signatra.ttf
+      - family: Signatra
+        fonts:
+          - asset: fonts/Signatra.ttf
 
-    - family: Brand-Regular
-      fonts:
-        - asset: fonts/bolt-regular.ttf
+      - family: Brand-Regular
+        fonts:
+          - asset: fonts/bolt-regular.ttf
 
-    - family: Brand Bold
-      fonts:
-        - asset: fonts/bolt-semibold.ttf
+      - family: Brand Bold
+        fonts:
+          - asset: fonts/bolt-semibold.ttf
        
           
   #

@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(  //wrapping mateerialapp with Change notfier so that data can be retrieve in all screens
       create: (context)=>AppData(),
           child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Taxi Rider App',
         debugShowCheckedModeBanner: false,
       
         theme: ThemeData(
