@@ -86,7 +86,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: RaisedButton(
               onPressed: () {
-                if (isDriverAvailable == false) {
+                if (isDriverAvailable != true) {
                   makeDriverOnlineNow();
                   getLocationLiveUpdates();
                   setState(() {
@@ -104,8 +104,6 @@ class _HomeTabPageState extends State<HomeTabPage> {
                     isDriverAvailable = false;
                   });
                   makeDriverOffline();
-                  Fluttertoast.showToast(
-                      msg: "You are Offline now", backgroundColor: Colors.blue);
                 }
               },
               color: driverStatusColor,
@@ -138,7 +136,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
 
   void makeDriverOnlineNow() async {
     Position position = await Geolocator.getCurrentPosition(
-    desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high);
     currentPosition = position;
 
     Geofire.initialize("availableDrivers");
@@ -155,22 +153,22 @@ class _HomeTabPageState extends State<HomeTabPage> {
         Geolocator.getPositionStream().listen((Position position) {
       currentPosition = position;
 
-      if (isDriverAvailable == true) {
-        Geofire.setLocation(
-            currentfirebaseUser.uid, position.latitude, position.longitude);
+      if(isDriverAvailable==true){
+         Geofire.setLocation(currentfirebaseUser.uid, position.latitude, position.longitude);
       }
-
+     
       LatLng latLng = LatLng(position.latitude, position.longitude);
       newGoogleMapController.animateCamera(CameraUpdate.newLatLng(latLng));
     });
   }
 
   void makeDriverOffline() {
-    if(isDriverAvailable==true){
-      Geofire.removeLocation(currentfirebaseUser.uid);
-      rideRequestRef.onDisconnect();
-      rideRequestRef.remove();
-      rideRequestRef = null;
-    }
+    Geofire.removeLocation(currentfirebaseUser.uid);
+    // rideRequestRef.onDisconnect();
+    // rideRequestRef.remove();
+    // rideRequestRef = null;
+
+    Fluttertoast.showToast(
+        msg: "You are Offline now", backgroundColor: Colors.blue);
   }
 }
